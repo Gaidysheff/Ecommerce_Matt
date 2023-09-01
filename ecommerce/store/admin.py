@@ -5,15 +5,15 @@ from .models import Item, OrderItem, Order
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'price', 'discount_price',
-                    'category', 'label', 'slug')
-    list_display_links = ('id', 'title', 'category', 'label')
-    search_fields = ('title', 'category', 'label')
+                    'category', 'label', 'slug', 'description', 'image')
+    list_display_links = ('id', 'title', 'category', 'label', 'description')
+    search_fields = ('title', 'category', 'label', 'description')
     list_filter = ('title', 'price', 'category', 'label')
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'ordered', 'item')
+    list_display = ('id', 'user', 'ordered', 'item', 'quantity')
     list_display_links = ('id', 'item')
     search_fields = ('user', 'item')
     list_editable = ('ordered',)
