@@ -1,10 +1,33 @@
 from django.db import models
 from django.conf import settings
+from django.shortcuts import reverse
+
+
+CATEGORY_CHOICES = (
+    ('S', 'Shirt'),
+    ('SW', 'Sport wear'),
+    ('OW', 'Outwear')
+)
+
+LABEL_CHOICES = (
+    ('P', 'primary'),
+    ('S', 'secondary'),
+    ('D', 'danger')
+)
 
 
 class Item(models.Model):
     title = models.CharField(max_length=100, verbose_name='Наименование')
     price = models.FloatField(verbose_name='Цена')
+    discount_price = models.FloatField(
+        blank=True, null=True, verbose_name='Цена со скидкой')
+    category = models.CharField(
+        choices=CATEGORY_CHOICES, max_length=2, verbose_name='Категория')
+    label = models.CharField(choices=LABEL_CHOICES,
+                             max_length=1, verbose_name='Лейба')
+    slug = models.SlugField(verbose_name='Слаг')
+    description = models.TextField()
+    image = models.ImageField()
 
     def __str__(self):
         return self.title
@@ -12,6 +35,11 @@ class Item(models.Model):
     class Meta:
         verbose_name = 'Товар'
         verbose_name_plural = 'Товары'
+
+    def get_absolute_url(self):
+        return reverse("store:product", kwargs={
+            'slug': self.slug
+        })
 
 
 class OrderItem(models.Model):

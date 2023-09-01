@@ -1,13 +1,15 @@
 from django.shortcuts import render
+from django.views.generic import ListView, DetailView, View
 
 from .models import Item
 
 
-def item_list(request):
+class HomeView(ListView):
+    model = Item
+    # paginate_by = 10
+    template_name = "store/home.html"
 
-    items = Item.objects.all()
 
-    context = {
-        'items': items
-    }
-    return render(request, 'store/home.html', context)
+class ItemDetailView(DetailView):
+    model = Item
+    template_name = "store/product.html"

@@ -45,7 +45,7 @@
       }
     </style>
   </head>
-  {% comment %} {% include "navbar.html" %} {% endcomment %}
+  {% comment %} {% include "store/navbar.html" %} {% endcomment %}
 
   <body>
     <div class="mt-5 pt-4">
@@ -69,15 +69,10 @@
 
     {% block content %} {% endblock content %}
     <br />
-    {% block extra_body %} {%endblock %}
+    {% block extra_body %} {% endblock %}
     <br />
-    {% comment %}
-    <br />{% include "footer.html" %} {% include "scripts.html" %} <br />{%
-    endcomment %}
+    {% include "store/footer.html" %} {% include "store/scripts.html" %}
     <br />
-    {% comment %} <br />
     {% block extra_scripts %} {% endblock extra_scripts %}
-    <br />
-    {% endcomment %}
   </body>
 </html>

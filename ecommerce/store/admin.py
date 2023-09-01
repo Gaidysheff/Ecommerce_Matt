@@ -4,10 +4,11 @@ from .models import Item, OrderItem, Order
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'price')
-    list_display_links = ('id', 'title')
-    search_fields = ('title',)
-    list_filter = ('title', 'price')
+    list_display = ('id', 'title', 'price', 'discount_price',
+                    'category', 'label', 'slug')
+    list_display_links = ('id', 'title', 'category', 'label')
+    search_fields = ('title', 'category', 'label')
+    list_filter = ('title', 'price', 'category', 'label')
 
 
 @admin.register(OrderItem)

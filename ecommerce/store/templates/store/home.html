@@ -1,4 +1,5 @@
 {% extends "store/base.html" %} {% block content %}
+
 <main>
   <div class="container">
     <!--Navbar-->
@@ -95,8 +96,9 @@
 
               <h4 class="font-weight-bold blue-text">
                 <strong
-                  >$ {% if item.discount_price %} {{ item.discount_price }} {%
-                  else %} {{ item.price }} {% endif %}
+                  >$ {% if item.discount_price %} {{ item.discount_price }}
+                  <br />
+                  {% else %} {{ item.price }} {% endif %}
                 </strong>
               </h4>
             </div>
