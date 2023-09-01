@@ -1,5 +1,13 @@
 from django.shortcuts import render
 
+from .models import Item
 
-def index(request):
-    return render(request, 'store/index.html')
+
+def item_list(request):
+
+    items = Item.objects.all()
+
+    context = {
+        'items': items
+    }
+    return render(request, 'store/home.html', context)
