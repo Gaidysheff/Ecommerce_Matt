@@ -1,4 +1,4 @@
-{% comment %} {% load cart_template_tags %} {% endcomment %}
+{% load cart_template_tags %}
 
 <nav
   class="navbar fixed-top navbar-expand-lg navbar-light white scrolling-navbar"
@@ -42,9 +42,12 @@
       <ul class="navbar-nav nav-flex-icons">
         {% if request.user.is_authenticated %}
         <li class="nav-item">
-          <a href="#" class="nav-link waves-effect">
+          <a
+            href="{% url 'store:order-summary' %}"
+            class="nav-link waves-effect"
+          >
             <span class="badge red z-depth-1 mr-1">
-              {% comment %} {{ request.user|cart_item_count }} {% endcomment %}
+              {{ request.user|cart_item_count }}
             </span>
             <i class="fas fa-shopping-cart"></i>
             <span class="clearfix d-none d-sm-inline-block"> Cart </span>
