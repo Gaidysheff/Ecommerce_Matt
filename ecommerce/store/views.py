@@ -8,6 +8,7 @@ from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView, View
 
 from .models import Item, OrderItem, Order
+from .forms import CheckoutForm
 
 
 class HomeView(ListView):
@@ -121,3 +122,18 @@ def remove_single_item_from_cart(request, slug):
     else:
         messages.info(request, "You do not have an active order")
         return redirect("store:product", slug=slug)
+
+
+class CheckoutView(View):
+    def get(self, *args, **kwargs):
+        form = CheckoutForm()
+        context = {
+            'form': form,
+        }
+        return render(self.request, "store/checkout.html", context)
+
+    def post(self, *args, **kwargs):
+        form = CheckoutForm(self.request.POST or None)
+        if form.is_valid():
+            print("Form is valid")
+            return redirect('store:checkout')
