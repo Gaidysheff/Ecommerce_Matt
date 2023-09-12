@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.shortcuts import reverse
+from django_countries.fields import CountryField
 
 
 CATEGORY_CHOICES = (
@@ -13,6 +14,11 @@ LABEL_CHOICES = (
     ('P', 'primary'),
     ('S', 'secondary'),
     ('D', 'danger')
+)
+
+ADDRESS_CHOICES = (
+    ('B', 'Billing'),
+    ('S', 'Shipping'),
 )
 
 
@@ -90,6 +96,12 @@ class Order(models.Model):
         auto_now_add=True, verbose_name='Дата начала заказа')
     ordered_date = models.DateTimeField(verbose_name='Дата заказа')
     ordered = models.BooleanField(default=False, verbose_name='Заказано')
+    shipping_address = models.ForeignKey(
+        'Address', related_name='shipping_address', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Адрес доставки')
+    billing_address = models.ForeignKey(
+        'Address', related_name='billing_address', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Адрес проживания')
+    payment = models.ForeignKey(
+        'Payment', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Оплата')
 
     def __str__(self):
         return self.user.username
@@ -110,3 +122,39 @@ class Order(models.Model):
         # if self.coupon:
         #     total -= self.coupon.amount
         return total
+
+
+class Address(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE, verbose_name='Заказчик')
+    street_address = models.CharField(max_length=100, verbose_name='Улица')
+    apartment_address = models.CharField(
+        max_length=100, verbose_name='дом, квартира')
+    country = CountryField(multiple=False, verbose_name='Страна')
+    zip = models.CharField(max_length=100, verbose_name='Индекс')
+    address_type = models.CharField(
+        max_length=1, choices=ADDRESS_CHOICES, verbose_name='Тип адреса')
+    default = models.BooleanField(default=False, verbose_name='По умолчанию')
+
+    def __str__(self):
+        return self.user.username
+
+    class Meta:
+        verbose_name = 'Адрес'
+        verbose_name_plural = 'Адреса'
+
+
+class Payment(models.Model):
+    stripe_charge_id = models.CharField(max_length=50, verbose_name='id карты')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                             blank=True, null=True, verbose_name='Покупатель')
+    amount = models.FloatField(verbose_name='Сумма')
+    timestamp = models.DateTimeField(
+        auto_now_add=True, verbose_name='Дата/Время')
+
+    def __str__(self):
+        return self.user.username
+
+    class Meta:
+        verbose_name = 'Оплата'
+        verbose_name_plural = 'Оплаты'
