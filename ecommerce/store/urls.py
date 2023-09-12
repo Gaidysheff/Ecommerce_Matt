@@ -13,4 +13,6 @@ urlpatterns = [
          name='remove-single-item-from-cart'),
     path('order-summary/', OrderSummaryView.as_view(), name='order-summary'),
     path('payment/<payment_option>/', PaymentView.as_view(), name='payment'),
+    path('add-coupon/', AddCouponView.as_view(), name='add-coupon'),
+
 ]

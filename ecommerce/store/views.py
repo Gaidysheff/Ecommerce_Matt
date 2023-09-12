@@ -7,8 +7,8 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView, View
 
-from .models import Item, OrderItem, Order, Address, Payment
-from .forms import CheckoutForm
+from .models import Item, OrderItem, Order, Address, Payment, Coupon
+from .forms import CheckoutForm, CouponForm
 
 from django.conf import settings
 
@@ -132,11 +132,20 @@ def remove_single_item_from_cart(request, slug):
 
 class CheckoutView(View):
     def get(self, *args, **kwargs):
-        form = CheckoutForm()
-        context = {
-            'form': form,
-        }
-        return render(self.request, "store/checkout.html", context)
+        try:
+            order = Order.objects.get(user=self.request.user, ordered=False)
+
+            form = CheckoutForm()
+            context = {
+                'form': form,
+                'order': order,
+                'couponform': CouponForm(),
+                'DISPLAY_COUPON_FORM': True,
+            }
+            return render(self.request, "store/checkout.html", context)
+        except ObjectDoesNotExist:
+            messages.info(self.request, "This coupon does not exist")
+            return redirect("store:checkout")
 
     def post(self, *args, **kwargs):
         form = CheckoutForm(self.request.POST or None)
@@ -185,10 +194,16 @@ class CheckoutView(View):
 class PaymentView(View):
     def get(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
-        context = {
-            'order': order,
-        }
-        return render(self.request, 'store/payment.html', context)
+        if order.billing_address:
+            context = {
+                'order': order,
+                'DISPLAY_COUPON_FORM': False,
+            }
+            return render(self.request, 'store/payment.html', context)
+        else:
+            messages.warning(
+                self.request, "You have not added a billing address")
+            return redirect("store:checkout")
 
     def post(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
@@ -211,6 +226,11 @@ class PaymentView(View):
             payment.save()
 
             # assign the payment to the order
+
+            order_items = order.items.all()
+            order_items.update(ordered=True)
+            for item in order_items:
+                item.save()
 
             order.ordered = True
             order.payment = payment
@@ -260,3 +280,29 @@ class PaymentView(View):
             messages.warning(
                 self.request, "A serious error occurred. We have been notifed.")
             return redirect("/")
+
+
+def get_coupon(request, code):
+    try:
+        coupon = Coupon.objects.get(code=code)
+        return coupon
+    except ObjectDoesNotExist:
+        messages.info(request, "This coupon does not exist")
+        return redirect("store:checkout")
+
+
+class AddCouponView(View):
+    def post(self, *args, **kwargs):
+        form = CouponForm(self.request.POST or None)
+        if form.is_valid():
+            try:
+                code = form.cleaned_data.get('code')
+                order = Order.objects.get(
+                    user=self.request.user, ordered=False)
+                order.coupon = get_coupon(self.request, code)
+                order.save()
+                messages.success(self.request, "Successfully added coupon")
+                return redirect("store:checkout")
+            except ObjectDoesNotExist:
+                messages.info(self.request, "You do not have an active order")
+                return redirect("store:checkout")
