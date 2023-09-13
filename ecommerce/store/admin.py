@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Item, OrderItem, Order, Address, Payment, Coupon
+from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund
+
+
+def make_refund_accepted(modeladmin, request, queryset):
+    queryset.update(refund_requested=False, refund_granted=True)
+
+
+make_refund_accepted.short_description = 'Update orders to refund granted'
 
 
 @admin.register(Item)
@@ -22,12 +29,19 @@ class OrderItemAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'display_orders', 'start_date', 'ordered_date',
-                    'ordered', 'shipping_address', 'billing_address', 'payment', 'coupon', )
-    list_display_links = ('id', 'display_orders')
-    search_fields = ('user', )
-    list_editable = ('ordered',)
-    list_filter = ('start_date', 'ordered_date', 'ordered')
+    list_display = ('id', 'user', 'ref_code', 'start_date', 'ordered_date', 'ordered',
+                    'shipping_address', 'billing_address',
+                    'payment', 'coupon', 'being_delivered', 'received',
+                    'refund_requested', 'refund_granted')
+    # 'display_orders',
+    list_display_links = ('id', 'user', 'shipping_address',
+                          'billing_address', 'payment', 'coupon', )
+    search_fields = ('user__username', 'ref_code', )
+    list_editable = ('ordered', 'being_delivered',
+                     'received', 'refund_requested', 'refund_granted')
+    list_filter = ('start_date', 'ordered_date', 'ordered',
+                   'being_delivered', 'received', 'refund_requested', 'refund_granted')
+    actions = [make_refund_accepted]
 
 
 @admin.register(Address)
@@ -45,3 +59,8 @@ class PaymentAdmin(admin.ModelAdmin):
 @admin.register(Coupon)
 class CouponAdmin(admin.ModelAdmin):
     list_display = ('id', 'code', 'amount', )
+
+
+@admin.register(Refund)
+class RefundAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'reason', 'accepted', 'email', )

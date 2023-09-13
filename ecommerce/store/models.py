@@ -91,6 +91,7 @@ class OrderItem(models.Model):
 class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE, verbose_name='Заказчик')
+    ref_code = models.CharField(max_length=20, blank=True, null=True)
     items = models.ManyToManyField(OrderItem)
     start_date = models.DateTimeField(
         auto_now_add=True, verbose_name='Дата начала заказа')
@@ -104,6 +105,24 @@ class Order(models.Model):
         'Payment', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Оплата')
     coupon = models.ForeignKey(
         'Coupon', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Купон')
+    being_delivered = models.BooleanField(
+        default=False, verbose_name='Доставляется')
+    received = models.BooleanField(default=False, verbose_name='Получено')
+    refund_requested = models.BooleanField(
+        default=False, verbose_name='Запрос на возмещение')
+    refund_granted = models.BooleanField(
+        default=False, verbose_name='Возмещено')
+
+    '''
+    1. Item added to cart
+    2. Adding a billing address
+    (Failed checkout)
+    3. Payment
+    (Preprocessing, processing, packaging etc.)
+    4. Being delivered
+    5. Received
+    6. Refunds
+    '''
 
     def __str__(self):
         return self.user.username
@@ -112,10 +131,10 @@ class Order(models.Model):
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
 
-    def display_orders(self):
-        return ', '.join([x.item for x in self.items.all()])
+    # def display_orders(self):
+    #     return ', '.join([x.item for x in self.items.all()])
 
-    display_orders.short_description = 'Товары'
+    # display_orders.short_description = 'Товары'
 
     def get_total(self):
         total = 0
@@ -172,3 +191,17 @@ class Coupon(models.Model):
     class Meta:
         verbose_name = 'Купон'
         verbose_name_plural = 'Купоны'
+
+
+class Refund(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    reason = models.TextField()
+    accepted = models.BooleanField(default=False)
+    email = models.EmailField()
+
+    def __str__(self):
+        return f"{self.pk}"
+
+    class Meta:
+        verbose_name = 'Возмещение'
+        verbose_name_plural = 'Возмещения'
