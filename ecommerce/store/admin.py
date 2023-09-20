@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund
+from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile
 
 
 def make_refund_accepted(modeladmin, request, queryset):
@@ -48,7 +48,8 @@ class OrderAdmin(admin.ModelAdmin):
 class AddressAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'street_address', 'apartment_address',
                     'country', 'zip', 'address_type', 'default')
-    search_fields = ('user', )
+    search_fields = ('user',  'street_address', 'apartment_address', 'zip', )
+    list_filter = ('default', 'address_type', 'country',)
 
 
 @admin.register(Payment)
@@ -64,3 +65,9 @@ class CouponAdmin(admin.ModelAdmin):
 @admin.register(Refund)
 class RefundAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'reason', 'accepted', 'email', )
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'stripe_customer_id',
+                    'one_click_purchasing', )
